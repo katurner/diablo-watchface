@@ -18,7 +18,7 @@
       {
         "characterRegex": "[0-9:A-Za-z ]",
         "type": "font",
-        "name": "Exocet",
+        "name": "EXOCET_24",
         "file": "fonts/exocet.ttf"
       }
     ]
