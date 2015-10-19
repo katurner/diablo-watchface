@@ -1,0 +1,19 @@
+{
+  "uuid": "192a65f1-c611-423c-b443-6725788174aa",
+  "shortName": "D3 Torment",
+  "longName": "D3 Torment",
+  "companyName": "Kip Turner",
+  "versionCode": 1,
+  "versionLabel": "1.0",
+  "sdkVersion": "3",
+  "targetPlatforms": ["basalt", "chalk"],
+  "watchapp": {
+    "watchface": true
+  },
+  "appKeys": {
+    "dummy": 0
+  },
+  "resources": {
+    "media": []
+  }
+}
