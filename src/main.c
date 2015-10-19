@@ -22,6 +22,9 @@ static Time s_last_time, s_anim_time;
 static int s_radius = 0, s_anim_hours_60 = 0, s_color_channels[3];
 static bool s_animating = false;
 
+static TextLayer *s_font_layer;
+static GFont s_custom_font_24;
+
 /*************************** AnimationImplementation **************************/
 
 static void animation_started(Animation *anim, void *context) {
@@ -131,10 +134,22 @@ static void window_load(Window *window) {
   s_canvas_layer = layer_create(window_bounds);
   layer_set_update_proc(s_canvas_layer, update_proc);
   layer_add_child(window_layer, s_canvas_layer);
+
+  // Font business
+  s_font_layer = text_layer_create(GRect(0, 50, 144, 50));
+  text_layer_set_background_color(s_font_layer, GColorClear);
+  text_layer_set_text(s_font_layer, "TextLayer");
+
+  s_custom_font_24 = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_EXOCET_24));
+  text_layer_set_font(s_font_layer, s_custom_font_24);
+  layer_add_child(window_layer, text_layer_get_layer(s_font_layer));
 }
 
 static void window_unload(Window *window) {
   layer_destroy(s_canvas_layer);
+
+  fonts_unload_custom_font(s_custom_font_24);
+  text_layer_destroy(s_font_layer);
 }
 
 /*********************************** App **************************************/
