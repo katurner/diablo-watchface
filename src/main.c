@@ -22,8 +22,12 @@ static Time s_last_time, s_anim_time;
 static int s_radius = 0, s_anim_hours_60 = 0, s_color_channels[3];
 static bool s_animating = false;
 
-static TextLayer *s_font_layer;
 static GFont s_custom_font_24;
+static GFont s_numerals_font;
+
+static TextLayer *s_font_layer;
+static TextLayer *s_numeral_font_layer;
+
 
 /*************************** AnimationImplementation **************************/
 
@@ -66,6 +70,59 @@ static void tick_handler(struct tm *tick_time, TimeUnits changed) {
   if(s_canvas_layer) {
     layer_mark_dirty(s_canvas_layer);
   }
+}
+
+static char* int_to_roman_numerals(int input)
+{
+  char* result;
+  int i = 0;
+  int j = 1;
+  result = (char*)malloc(sizeof(char));
+
+  while (input > 0)
+  {
+    if (input >= 9)
+    {
+      if (input == 9)
+      {
+        result = (char*)realloc(result, j*sizeof(char));
+        result[i++] = 'I';
+        j++;
+        input += 1;
+      }
+      result = (char*)realloc(result, j*sizeof(char));
+      result[i++] = 'X';
+      j++;
+      input -= 10;
+    }
+    else if (input >= 4)
+    {
+      if (input == 4)
+      {
+        result = (char*)realloc(result, j*sizeof(char));
+        result[i++] = 'I';
+        j++;
+        input += 1;
+      }
+      result = (char*)realloc(result, j*sizeof(char));
+      result[i++] = 'V';
+      j++;
+      input -= 5;
+    }
+    else
+    {
+      result = (char*)realloc(result, j*sizeof(char));
+      result[i++] = 'I';
+      j++;
+      input -= 1;
+    }
+  }
+
+  result[i]='\0';
+
+
+  //free(result);
+  return result;
 }
 
 static int hours_to_minutes(int hours_out_of_12) {
@@ -123,6 +180,9 @@ static void update_proc(Layer *layer, GContext *ctx) {
   if(s_radius > HAND_MARGIN) {
     graphics_draw_line(ctx, s_center, minute_hand);
   }
+
+
+  text_layer_set_text(s_numeral_font_layer, int_to_roman_numerals(mode_time.hours));
 }
 
 static void window_load(Window *window) {
@@ -136,20 +196,30 @@ static void window_load(Window *window) {
   layer_add_child(window_layer, s_canvas_layer);
 
   // Font business
-  s_font_layer = text_layer_create(GRect(0, 50, 144, 50));
-  text_layer_set_background_color(s_font_layer, GColorClear);
-  text_layer_set_text(s_font_layer, "TextLayer");
+  // s_font_layer = text_layer_create(GRect(0, 50, 144, 50));
+  // text_layer_set_background_color(s_font_layer, GColorClear);
+  // text_layer_set_text(s_font_layer, "TextLayer");
 
-  s_custom_font_24 = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_EXOCET_24));
-  text_layer_set_font(s_font_layer, s_custom_font_24);
-  layer_add_child(window_layer, text_layer_get_layer(s_font_layer));
+  // s_custom_font_24 = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_EXOCET_24));
+  // text_layer_set_font(s_font_layer, s_custom_font_24);
+  // layer_add_child(window_layer, text_layer_get_layer(s_font_layer));
+
+  s_numeral_font_layer = text_layer_create(GRect(0, 50, 144, 50));
+  text_layer_set_background_color(s_numeral_font_layer, GColorClear);
+  text_layer_set_text(s_numeral_font_layer, "");
+
+  s_numerals_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_EXOCET_48));
+  text_layer_set_font(s_font_layer, s_numerals_font);
+  layer_add_child(window_layer, text_layer_get_layer(s_numeral_font_layer));
 }
 
 static void window_unload(Window *window) {
   layer_destroy(s_canvas_layer);
 
-  fonts_unload_custom_font(s_custom_font_24);
-  text_layer_destroy(s_font_layer);
+  // fonts_unload_custom_font(s_custom_font_24);
+  // text_layer_destroy(s_font_layer);
+  fonts_unload_custom_font(s_numerals_font);
+  text_layer_destroy(s_numerals_font);
 }
 
 /*********************************** App **************************************/

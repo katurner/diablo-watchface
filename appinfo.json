@@ -20,6 +20,12 @@
         "type": "font",
         "name": "EXOCET_24",
         "file": "fonts/exocet.ttf"
+      },
+      {
+        "characterRegex": "[IXV]",
+        "type": "font",
+        "name": "EXOCET_48",
+        "file": "fonts/exocet.ttf"
       }
     ]
   }
