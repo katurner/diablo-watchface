@@ -9,6 +9,8 @@
 #define ANIMATION_DURATION 500
 #define ANIMATION_DELAY    600
 
+#define NUMERAL_BUFFER_SIZE 100
+
 typedef struct {
   int hours;
   int minutes;
@@ -28,6 +30,8 @@ static GFont s_numerals_font;
 static TextLayer *s_font_layer;
 static TextLayer *s_numeral_font_layer;
 
+
+static char* s_numeral_char_buffer;
 
 /*************************** AnimationImplementation **************************/
 
@@ -72,57 +76,36 @@ static void tick_handler(struct tm *tick_time, TimeUnits changed) {
   }
 }
 
-static char* int_to_roman_numerals(int input)
+static void int_to_roman_numerals(int input, char* out, int buffer_size)
 {
-  char* result;
   int i = 0;
-  int j = 1;
-  result = (char*)malloc(sizeof(char));
 
-  while (input > 0)
+  while (input > 0 && i < buffer_size - 1)
   {
-    if (input >= 9)
+    // APP_LOG(APP_LOG_LEVEL_DEBUG, "int_to_roman_numerals index now %d input is %d", i, input);
+    if (input == 9 || input == 4)
     {
-      if (input == 9)
-      {
-        result = (char*)realloc(result, j*sizeof(char));
-        result[i++] = 'I';
-        j++;
-        input += 1;
-      }
-      result = (char*)realloc(result, j*sizeof(char));
-      result[i++] = 'X';
-      j++;
+      out[i++] = 'I';
+      input += 1;
+    }
+    else if (input >= 10)
+    {
+      out[i++] = 'X';
       input -= 10;
     }
-    else if (input >= 4)
+    else if (input >= 5)
     {
-      if (input == 4)
-      {
-        result = (char*)realloc(result, j*sizeof(char));
-        result[i++] = 'I';
-        j++;
-        input += 1;
-      }
-      result = (char*)realloc(result, j*sizeof(char));
-      result[i++] = 'V';
-      j++;
+      out[i++] = 'V';
       input -= 5;
     }
     else
     {
-      result = (char*)realloc(result, j*sizeof(char));
-      result[i++] = 'I';
-      j++;
+      out[i++] = 'I';
       input -= 1;
     }
   }
 
-  result[i]='\0';
-
-
-  //free(result);
-  return result;
+  out[i] = '\0';
 }
 
 static int hours_to_minutes(int hours_out_of_12) {
@@ -181,8 +164,8 @@ static void update_proc(Layer *layer, GContext *ctx) {
     graphics_draw_line(ctx, s_center, minute_hand);
   }
 
-
-  text_layer_set_text(s_numeral_font_layer, int_to_roman_numerals(mode_time.hours));
+  int_to_roman_numerals(s_last_time.hours, s_numeral_char_buffer, NUMERAL_BUFFER_SIZE);
+  text_layer_set_text(s_numeral_font_layer, s_numeral_char_buffer);
 }
 
 static void window_load(Window *window) {
@@ -204,12 +187,14 @@ static void window_load(Window *window) {
   // text_layer_set_font(s_font_layer, s_custom_font_24);
   // layer_add_child(window_layer, text_layer_get_layer(s_font_layer));
 
+  s_numeral_char_buffer = malloc(sizeof(char) * NUMERAL_BUFFER_SIZE);
   s_numeral_font_layer = text_layer_create(GRect(0, 50, 144, 50));
   text_layer_set_background_color(s_numeral_font_layer, GColorClear);
   text_layer_set_text(s_numeral_font_layer, "");
 
   s_numerals_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_EXOCET_48));
-  text_layer_set_font(s_font_layer, s_numerals_font);
+  text_layer_set_font(s_numeral_font_layer, s_numerals_font);
+  text_layer_set_text_alignment(s_numeral_font_layer, GTextAlignmentCenter);
   layer_add_child(window_layer, text_layer_get_layer(s_numeral_font_layer));
 }
 
@@ -220,6 +205,8 @@ static void window_unload(Window *window) {
   // text_layer_destroy(s_font_layer);
   fonts_unload_custom_font(s_numerals_font);
   text_layer_destroy(s_numeral_font_layer);
+
+  free(s_numeral_char_buffer);
 }
 
 /*********************************** App **************************************/
