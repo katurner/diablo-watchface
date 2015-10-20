@@ -219,7 +219,7 @@ static void window_unload(Window *window) {
   // fonts_unload_custom_font(s_custom_font_24);
   // text_layer_destroy(s_font_layer);
   fonts_unload_custom_font(s_numerals_font);
-  text_layer_destroy(s_numerals_font);
+  text_layer_destroy(s_numeral_font_layer);
 }
 
 /*********************************** App **************************************/
