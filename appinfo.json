@@ -27,6 +27,12 @@
         "name": "EXOCET_48",
         "file": "fonts/exocet.ttf"
       }
+
+      {
+        "type": "png",
+        "name": "BACKGROUND_TYRAEL",
+        "file": "images/background_tyrael.png"
+      }
     ]
   }
 }

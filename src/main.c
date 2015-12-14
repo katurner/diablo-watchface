@@ -30,6 +30,8 @@ static GFont s_numerals_font;
 static TextLayer *s_font_layer;
 static TextLayer *s_numeral_font_layer;
 
+static Layer *s_background_image_layer;
+static GBitmap *s_background_image;
 
 static char* s_numeral_char_buffer;
 
@@ -125,44 +127,51 @@ static void update_proc(Layer *layer, GContext *ctx) {
 
   graphics_context_set_antialiased(ctx, ANTIALIASING);
 
-  // White clockface
-  graphics_context_set_fill_color(ctx, GColorWhite);
-  graphics_fill_circle(ctx, s_center, s_radius);
 
-  // Draw outline
-  graphics_draw_circle(ctx, s_center, s_radius);
+  GSize image_size = gbitmap_get_bounds(s_background_image).size;
+  graphics_draw_bitmap_in_rect(ctx, s_background_image, GRect(5 + offset, 5 + offset, image_size.w,
+	  image_size.h));
+  graphics_draw_bitmap_in_rect(ctx, s_background_image, GRect(80 + offset, 60 + offset, image_size.w,
+	  image_size.h));
 
-  // Don't use current time while animating
-  Time mode_time = (s_animating) ? s_anim_time : s_last_time;
+  //// White clockface
+  //graphics_context_set_fill_color(ctx, GColorWhite);
+  //graphics_fill_circle(ctx, s_center, s_radius);
 
-  // Adjust for minutes through the hour
-  float minute_angle = TRIG_MAX_ANGLE * mode_time.minutes / 60;
-  float hour_angle;
-  if(s_animating) {
-    // Hours out of 60 for smoothness
-    hour_angle = TRIG_MAX_ANGLE * mode_time.hours / 60;
-  } else {
-    hour_angle = TRIG_MAX_ANGLE * mode_time.hours / 12;
-  }
-  hour_angle += (minute_angle / TRIG_MAX_ANGLE) * (TRIG_MAX_ANGLE / 12);
+  //// Draw outline
+  //graphics_draw_circle(ctx, s_center, s_radius);
 
-  // Plot hands
-  GPoint minute_hand = (GPoint) {
-    .x = (int16_t)(sin_lookup(TRIG_MAX_ANGLE * mode_time.minutes / 60) * (int32_t)(s_radius - HAND_MARGIN) / TRIG_MAX_RATIO) + s_center.x,
-    .y = (int16_t)(-cos_lookup(TRIG_MAX_ANGLE * mode_time.minutes / 60) * (int32_t)(s_radius - HAND_MARGIN) / TRIG_MAX_RATIO) + s_center.y,
-  };
-  GPoint hour_hand = (GPoint) {
-    .x = (int16_t)(sin_lookup(hour_angle) * (int32_t)(s_radius - (2 * HAND_MARGIN)) / TRIG_MAX_RATIO) + s_center.x,
-    .y = (int16_t)(-cos_lookup(hour_angle) * (int32_t)(s_radius - (2 * HAND_MARGIN)) / TRIG_MAX_RATIO) + s_center.y,
-  };
+  //// Don't use current time while animating
+  //Time mode_time = (s_animating) ? s_anim_time : s_last_time;
 
-  // Draw hands with positive length only
-  if(s_radius > 2 * HAND_MARGIN) {
-    graphics_draw_line(ctx, s_center, hour_hand);
-  } 
-  if(s_radius > HAND_MARGIN) {
-    graphics_draw_line(ctx, s_center, minute_hand);
-  }
+  //// Adjust for minutes through the hour
+  //float minute_angle = TRIG_MAX_ANGLE * mode_time.minutes / 60;
+  //float hour_angle;
+  //if(s_animating) {
+  //  // Hours out of 60 for smoothness
+  //  hour_angle = TRIG_MAX_ANGLE * mode_time.hours / 60;
+  //} else {
+  //  hour_angle = TRIG_MAX_ANGLE * mode_time.hours / 12;
+  //}
+  //hour_angle += (minute_angle / TRIG_MAX_ANGLE) * (TRIG_MAX_ANGLE / 12);
+
+  //// Plot hands
+  //GPoint minute_hand = (GPoint) {
+  //  .x = (int16_t)(sin_lookup(TRIG_MAX_ANGLE * mode_time.minutes / 60) * (int32_t)(s_radius - HAND_MARGIN) / TRIG_MAX_RATIO) + s_center.x,
+  //  .y = (int16_t)(-cos_lookup(TRIG_MAX_ANGLE * mode_time.minutes / 60) * (int32_t)(s_radius - HAND_MARGIN) / TRIG_MAX_RATIO) + s_center.y,
+  //};
+  //GPoint hour_hand = (GPoint) {
+  //  .x = (int16_t)(sin_lookup(hour_angle) * (int32_t)(s_radius - (2 * HAND_MARGIN)) / TRIG_MAX_RATIO) + s_center.x,
+  //  .y = (int16_t)(-cos_lookup(hour_angle) * (int32_t)(s_radius - (2 * HAND_MARGIN)) / TRIG_MAX_RATIO) + s_center.y,
+  //};
+
+  //// Draw hands with positive length only
+  //if(s_radius > 2 * HAND_MARGIN) {
+  //  graphics_draw_line(ctx, s_center, hour_hand);
+  //} 
+  //if(s_radius > HAND_MARGIN) {
+  //  graphics_draw_line(ctx, s_center, minute_hand);
+  //}
 
   int_to_roman_numerals(s_last_time.hours, s_numeral_char_buffer, NUMERAL_BUFFER_SIZE);
   text_layer_set_text(s_numeral_font_layer, s_numeral_char_buffer);
@@ -196,10 +205,17 @@ static void window_load(Window *window) {
   text_layer_set_font(s_numeral_font_layer, s_numerals_font);
   text_layer_set_text_alignment(s_numeral_font_layer, GTextAlignmentCenter);
   layer_add_child(window_layer, text_layer_get_layer(s_numeral_font_layer));
+
+  s_background_image = gbitmap_create_with_resource(RESOURCE_ID_BACKGROUND_TYRAEL);
+  s_background_image_layer = layer_create(window_bounds);
+  layer_add_child(window_layer, s_background_image_layer);
 }
 
 static void window_unload(Window *window) {
   layer_destroy(s_canvas_layer);
+
+  gbitmap_destroy(s_background_image);
+  layer_destroy(s_background_image_layer);
 
   // fonts_unload_custom_font(s_custom_font_24);
   // text_layer_destroy(s_font_layer);
