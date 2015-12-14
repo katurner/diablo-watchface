@@ -30,8 +30,13 @@
 
       {
         "type": "png",
-        "name": "BACKGROUND_TYRAEL",
-        "file": "images/background_tyrael.png"
+        "name": "BACKGROUND_DIABLO",
+        "file": "images/background_diablo.png"
+      }
+      {
+        "type": "png",
+        "name": "IMAGE_SOULSTONE",
+        "file": "images/soulstone.png"
       }
     ]
   }
